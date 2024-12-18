@@ -128,6 +128,12 @@ module fir_core (
                         next_state = READ_H;
                     end
                 end
+                else begin
+                    tap_index = tap_index;
+                    oAddress_Master_Read = config_base_x;
+                    oRead_Master_Read = 1;
+                    next_state = READ_X;
+                end
             end
 
             READ_H: begin
@@ -142,6 +148,12 @@ module fir_core (
                         y = 0;
                         next_state = COMPUTE;
                     end
+                end
+                else begin
+                    tap_index = tap_index;
+                    oAddress_Master_Read = config_base_h;
+                    oRead_Master_Read = 1;
+                    next_state = READ_H;
                 end
             end
 
@@ -162,16 +174,19 @@ module fir_core (
                     
                     next_state = DONE;
                 end
+                else begin
+                    oAddress_Master_Write = config_base_y;
+                    oWriteData_Master_Write = y;
+                    oWrite_Master_Write = 1;
+                    next_state = WRITE_Y;
+                end
             end
 
             DONE: begin
                 oWrite_Master_Write = 0;
-                    status[0] = 1; // Done signal
-                    control[0] = 0;
-                // if (!control[0]) begin // Wait for start signal to be cleared
-                //     status[0] = 0;
-                    next_state = IDLE;
-                //end
+                status[0] = 1; // Done signal
+                control[0] = 0;
+                next_state = IDLE;
             end
 
             default: next_state = IDLE;
