@@ -2,6 +2,7 @@ module tb_fir_core();
 
     reg iClk;
     reg iRstn;
+    
     reg iChipSelect_Control;
     reg iWrite_Control;
     reg iRead_Control;
@@ -19,6 +20,7 @@ module tb_fir_core();
     wire oWrite_Master_Write;
     wire [31:0] oWriteData_Master_Write;
 
+    //////////////////////////////////////Monitor signals//////////////////////////////////////
     wire [3:0] state;
     wire [3:0] tap_index;
     wire [31:0] status;
@@ -26,12 +28,11 @@ module tb_fir_core();
     wire [31:0] config_base_x;
     wire [31:0] config_base_h;
     wire [31:0] config_base_y;
-
-    // wire [7:0] x0, x1, x2, x3, x4, x5, x6, x7;
-    // wire [7:0] h0, h1, h2, h3, h4, h5, h6, h7;
     wire [7:0] x [0:7];
     wire [7:0] h [0:7];
     wire signed [16:0] y;
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
 
     // Memory model (for simulating master memory interaction)
     reg [31:0] memory [0:255];
@@ -73,21 +74,21 @@ module tb_fir_core();
         memory[7] = 32'h00000008; // x[7] = 8
 
         // Memory for h values (coefficients)
-        memory[8] = 32'h00000009; // h[0] = 1
-        memory[9] = 32'h00000007; // h[1] = 2
-        memory[10] = 32'h00000006; // h[2] = 3
-        memory[11] = 32'h00000005; // h[3] = 4
-        memory[12] = 32'h00000004; // h[4] = 5
-        memory[13] = 32'h00000003; // h[5] = 6
-        memory[14] = 32'h00000002; // h[6] = 7
-        memory[15] = 32'h00000001; // h[7] = 8
+        memory[8 ] = 32'h00000001; // h[0] = 1
+        memory[9 ] = 32'h00000002; // h[1] = 2
+        memory[10] = 32'h00000003; // h[2] = 3
+        memory[11] = 32'h00000004; // h[3] = 4
+        memory[12] = 32'h00000005; // h[4] = 5
+        memory[13] = 32'h00000006; // h[5] = 6
+        memory[14] = 32'h00000007; // h[6] = 7
+        memory[15] = 32'h00000008; // h[7] = 8
     end
 
     // Simulate memory read
     always @(posedge iClk) begin
         if (oRead_Master_Read) begin
             iWait_Master_Read <= 0; // No wait state for read
-            iReadData_Master_Read <= memory[(oAddress_Master_Read[7:0])]; // Address offset
+            iReadData_Master_Read <= memory[(oAddress_Master_Read[7:0])];
         end 
     end
 
@@ -139,13 +140,14 @@ module tb_fir_core();
         #20;
 
         // Read result from memory
-        $display("Result y = %d", memory[64 >> 2]);
+        $display("Result y = %d", memory[16]);
 
         // End simulation
         #100;
         $stop;
     end
 
+    /////////////////////////////// Monitor signals ///////////////////////////////
     // Generate individual signals for x and h arrays
     genvar i;
     generate
@@ -154,7 +156,6 @@ module tb_fir_core();
             assign h[i] = uut.h[i];
         end
     endgenerate
-
     // Assign other internal signals for monitoring
     assign state = uut.state;
     assign tap_index = uut.tap_index;
@@ -164,5 +165,6 @@ module tb_fir_core();
     assign config_base_h = uut.config_base_h;
     assign config_base_y = uut.config_base_y;
     assign y = uut.y;
+    /////////////////////////////////////////////////////////////////////////////
 
 endmodule
